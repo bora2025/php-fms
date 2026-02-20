@@ -27,25 +27,20 @@ class GoogleSheetsService
 
     public function getBudgetData()
     {
-        if ($this->service) {
-            try {
-                $range = 'Budget!A:C';
-                $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
-                $values = $response->getValues();
-                $budgets = [];
-                foreach ($values as $row) {
-                    $budgets[] = [
-                        'id' => $row[0] ?? '',
-                        'name' => $row[1] ?? '',
-                        'amount' => (float) ($row[2] ?? 0),
-                    ];
-                }
-                return $budgets;
-            } catch (\Exception $e) {
-                // Fallback to dummy
+        $filePath = storage_path('app/budget_data_2026-02-19.json');
+        if (file_exists($filePath)) {
+            $data = json_decode(file_get_contents($filePath), true);
+            $budgets = [];
+            foreach ($data as $item) {
+                $budgets[] = [
+                    'id' => $item['program'] ?? $item['rowNumber'] ?? '',
+                    'name' => $item['expenseCategory'] ?? '',
+                    'amount' => (float) ($item['totalBudget'] ?? 0),
+                ];
             }
+            return $budgets;
         }
-        // Dummy data
+        // Fallback to dummy
         return [
             ['id' => '30501', 'name' => 'Package 1', 'amount' => 1000],
             ['id' => '30502', 'name' => 'Package 2', 'amount' => 2000],
